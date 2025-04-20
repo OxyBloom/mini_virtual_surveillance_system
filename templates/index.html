@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🏠 Security System Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .section {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+
+    label, select, input[type="email"] {
+      font-size: 16px;
+      margin: 5px;
+    }
+
+    input[type="email"] {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 7px 15px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    img, video {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    /* Motion Status */
+    .motion-status {
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 10px 15px;
+      border-radius: 6px;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+
+    .motion-inactive {
+      background-color: #eee;
+      color: #666;
+    }
+
+    .motion-active {
+      background-color: #ff4c4c;
+      color: white;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px rgba(255, 76, 76, 0.5); }
+      100% { box-shadow: 0 0 20px rgba(255, 76, 76, 0.9); }
+    }
+
+    select {
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .control-panel form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🏠 Security System Dashboard</h1>
+
+  <div class="section control-panel">
+    <h2>⚙️ Settings</h2>
+    <form method="POST" action="/set_config">
+      <label>
+        <input type="checkbox" name="alerts_enabled" {% if alerts_enabled %}checked{% endif %}>
+        Enable Alerts
+      </label>
+      <label>Email:
+        <input type="email" name="alert_email" value="{{ alert_email }}">
+      </label>
+      <button type="submit">Update Settings</button>
+    </form>
+  </div>
+
+  <!-- <div class="section">
+    <h2>📡 Motion Detection Status</h2>
+    <p>Status:
+      <span id="motionStatus" class="motion-status motion-inactive">
+        {% if motion_detected %}Motion Detected{% else %}No Motion{% endif %}
+      </span>
+    </p>
+  </div> -->
+
+  <div class="section">
+    <h2>📸 View Snapshots</h2>
+    <form method="GET" action="/view_snapshot">
+      <select name="snapshot">
+        {% for snap in snapshots %}
+          <option value="{{ snap }}">{{ snap }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">View Snapshot</button>
+    </form>
+    {% if selected_snapshot %}
+      <img src="{{ url_for('get_snapshot', filename=selected_snapshot) }}">
+    {% endif %}
+  </div>
+
+  <div class="section">
+    <h2>🎥 Recorded Videos</h2>
+    <form method="GET" action="/view_video">
+      <select name="video">
+        {% for video in videos %}
+          <option value="{{ video }}">{{ video }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Download Video</button>
+    </form>
+    {% if selected_video %}
+      <div style="margin-top: 10px;">
+        <a href="{{ url_for('get_video', filename=selected_video) }}" download>{{ selected_video }}</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    function updateMotionStatus() {
+      fetch("/motion_status")
+        .then(response => response.json())
+        .then(data => {
+          const statusSpan = document.getElementById("motionStatus");
+          if (data.motion_detected) {
+            statusSpan.textContent = "Motion Detected";
+            statusSpan.classList.add("motion-active");
+            statusSpan.classList.remove("motion-inactive");
+          } else {
+            statusSpan.textContent = "No Motion";
+            statusSpan.classList.remove("motion-active");
+            statusSpan.classList.add("motion-inactive");
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching motion status:", error);
+        });
+    }
+
+    setInterval(updateMotionStatus, 3000);
+    updateMotionStatus(); // Load on start
+  </script>
+</body>
+</html>

@@ -5,10 +5,13 @@ __pycache__/
 
 # C extensions
 *.so
-
+*.jpg
+*.avi
 # Distribution / packaging
 .Python
 build/
+logs
+recordings
 develop-eggs/
 dist/
 downloads/
